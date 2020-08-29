@@ -1,0 +1,77 @@
+General Motors
+Agriculture
+Agronomy
+Architecture
+Automation
+Biotechnology
+Cartography
+Chemical engineering
+Communication
+Cyber Security
+Media studies
+Telecommunications
+Construction
+Control theory
+Design
+Earthquake engineering
+Energy
+Ergonomics
+Firefighting
+Fire prevention
+Forensics
+Forestry
+Information science
+Internet
+Management
+Manufacturing
+Marketing
+Medicine
+Metalworking
+Microtechnology
+Mining
+Nanotechnology
+Nuclear technology
+Optics
+Plumbing
+Robotics
+Sound technology
+Technology forecasting
+Computing
+Artificial intelligence
+Computer architecture
+Computer model
+Computer engineering
+Computer science
+Computer security
+Computing and society
+Embedded systems
+Free software
+Human–computer interaction
+Information systems
+Mobile web
+Multimedia
+Networks (Industrial)
+Operating systems
+Product lifecycle management
+Programming
+Real-time computing
+Software engineering
+Unsolved problems in computer science
+Avionics
+Consumer electronics
+Digital electronics
+Digital media
+Electrical components
+Electronic design
+Electronics manufacturing
+Integrated circuits
+Microwave technology
+Molecular electronics
+Optoelectronics
+Quantum electronics
+Radio-frequency identification
+RFID
+Radio electronics
+Semiconductors
+Surveillance
+Telecommunications
