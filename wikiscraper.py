@@ -2,14 +2,16 @@ import threading
 import time
 import random
 from datetime import datetime
+from urllib.request import Request, urlopen, HTTPError, URLError
 
+#The following class reads the configuration file, 
 class ScraperManager():
-    def __init__(self, num_of_workers, rps = 50):
+    def __init__(self, rps = 3):
         self.url_gen =  None
-        self.num_of_workers = 3
-        self.rps = 2
-        self.configurate_parameters
-        self.global_semaphore = threading.Semaphore(value=self.rps)
+        self.num_of_workers = 8
+        self.rps = rps
+        self.configurate_parameters("")
+        self.semaphore = threading.Semaphore(value=self.rps)
         self.workers = []
         self.init_workers()
 
@@ -25,10 +27,10 @@ class ScraperManager():
             worker.start()
         while True:
             time.sleep(1)
-            print('MANAGER: waking up 2 threads..')
+            print('MANAGER: waking up {} threads..'.format(self.rps))
             for _ in range(self.rps):
                 try:
-                    self.global_semaphore.release()
+                    self.semaphore.release()
                 except ValueError as v:
                     print('MANAGER: Cannot over-release..')
 
@@ -40,7 +42,7 @@ class ScraperManager():
         my_name = current_thread.name
         while True:
             print('{}: {} Waiting for work.'.format(datetime.now(), my_name))
-            manager.global_semaphore.acquire()
+            manager.semaphore.acquire()
             print('{}: {} Scraping...'.format(datetime.now(), my_name))
             time.sleep(5)
              
@@ -54,7 +56,18 @@ class MyWorker(threading.Thread):
     def run(self):
         self.target(self.args, self.args[0])
 
-manager = ScraperManager(4)
-print(manager.workers)
-manager.scrape()
+
+def request(url):
+    try:
+        request = Request(url)
+        response = urlopen(request)
+        html = response.read()
+        response.close()
+    except (HTTPError, URLError):
+        print ("Failed to get article")
+    print(html[:100])
+    
+get_data('http://en.wikipedia.org/wiki/Special:Random')
+# manager = ScraperManager()
+# manager.scrape()
 
