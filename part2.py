@@ -4,6 +4,7 @@ import random
 from datetime import datetime
 from urllib.request import Request, urlopen, HTTPError, URLError
 
+
 #The following class reads the configuration file, 
 class ScraperManager():
     def __init__(self, rps = 3):
@@ -44,7 +45,7 @@ class ScraperManager():
             print('{}: {} Waiting for work.'.format(datetime.now(), my_name))
             manager.semaphore.acquire()
             print('{}: {} Scraping...'.format(datetime.now(), my_name))
-            time.sleep(5)
+            time.sleep(5) # replace with actual action
              
 class MyWorker(threading.Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None):
@@ -57,17 +58,17 @@ class MyWorker(threading.Thread):
         self.target(self.args, self.args[0])
 
 
-def request(url):
+def get_data(url):
     try:
-        request = Request(url)
-        response = urlopen(request)
-        html = response.read()
-        response.close()
-    except (HTTPError, URLError):
-        print ("Failed to get article")
-    print(html[:100])
+        with urlopen(Request(url)) as response:
+            html = response.read()
+    except (URLError, HTTPError):
+        print("Cannot open url. Aborting")
+    return str(html, encoding='utf-8')
+
+
     
-get_data('http://en.wikipedia.org/wiki/Special:Random')
+get_data('http://en.wikipedia.org/')
 # manager = ScraperManager()
 # manager.scrape()
 
