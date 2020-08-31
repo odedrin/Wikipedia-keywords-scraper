@@ -3,49 +3,44 @@ import time
 import random
 from datetime import datetime
 from urllib.request import Request, urlopen, HTTPError, URLError
+from part1 import SearchEngine, Configuration
+import json
+
 
 
 #The following class reads the configuration file, 
 class ScraperManager():
-    def __init__(self, rps = 3):
-        self.url_gen =  None
-        self.num_of_workers = 8
-        self.rps = rps
-        self.configurate_parameters("")
-        self.semaphore = threading.Semaphore(value=self.rps)
+    def __init__(self, config):
+        self.semaphore = threading.Semaphore(value=config.data['rps'])
         self.workers = []
         self.init_workers()
-
-    def configurate_parameters(self, file):
-        pass #read configuration file, set url_gen, num_of_workers and rps according to the config file.
+        self.websearchengine = WebSearchEngine(config)
 
     def init_workers(self):
-        for i in range(self.num_of_workers):
-            self.workers.append(MyWorker(target=ScraperManager.work, args=(self,)))
+        for i in range(config.data['num_of_workers']):
+            self.workers.append(MyWorker(target=ScraperManager.work, args=(self,), name='{}'.format(i+1)))
         
     def scrape(self):
         for worker in self.workers:
             worker.start()
         while True:
             time.sleep(1)
-            print('MANAGER: waking up {} threads..'.format(self.rps))
-            for _ in range(self.rps):
+            for _ in range(config.data['rps']):
                 try:
                     self.semaphore.release()
                 except ValueError as v:
                     print('MANAGER: Cannot over-release..')
 
-            print('MANAGER: after wakeup')
-
     @staticmethod
     def work(self, manager):
         current_thread = threading.current_thread()
-        my_name = current_thread.name
+        worker_number = current_thread.name
         while True:
-            print('{}: {} Waiting for work.'.format(datetime.now(), my_name))
             manager.semaphore.acquire()
-            print('{}: {} Scraping...'.format(datetime.now(), my_name))
-            time.sleep(5) # replace with actual action
+            matches, url = manager.websearchengine.search()
+            message = '{}\nWorker: {}\nRandom URL: {}\nMatches: {}\n-----------------------------'.format(datetime.now(),worker_number,url,matches)
+            print(message)
+
              
 class MyWorker(threading.Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None):
@@ -57,18 +52,29 @@ class MyWorker(threading.Thread):
     def run(self):
         self.target(self.args, self.args[0])
 
+class WebSearchEngine(SearchEngine):
+    def __init__(self, config):
+        SearchEngine.__init__(self, config)
+        
+    def search(self):
+        text, actual_url = self.get_data(config.data['url_gen'])
+        found = SearchEngine.search(self,text)
+        return found, actual_url
 
-def get_data(url):
-    try:
-        with urlopen(Request(url)) as response:
-            html = response.read()
-    except (URLError, HTTPError):
-        print("Cannot open url. Aborting")
-    return str(html, encoding='utf-8')
+    def get_data(self, url):
+        try:
+            request = Request(url)
+            with urlopen(request) as response:
+                html = response.read()
+                actual_url = None
+                return str(html, encoding='utf-8'), actual_url
+        except (URLError, HTTPError):
+            print("Cannot open url. Aborting")
 
-
-    
-get_data('http://en.wikipedia.org/')
-# manager = ScraperManager()
-# manager.scrape()
-
+if __name__ == "__main__":    
+    # manager = ScraperManager()
+    # manager.scrape()
+    config = Configuration('config_file.json')
+    manager = ScraperManager(config)
+    manager.scrape()
+    print(found)
