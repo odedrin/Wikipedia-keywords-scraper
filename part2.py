@@ -2,7 +2,6 @@ import threading
 import time
 from urllib.request import Request, urlopen, HTTPError, URLError
 from part1 import SearchEngine, Configuration
-from datetime import datetime
  
 class ScraperManager():
     ''' 
