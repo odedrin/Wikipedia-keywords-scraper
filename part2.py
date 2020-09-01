@@ -2,30 +2,35 @@ import threading
 import time
 from urllib.request import Request, urlopen, HTTPError, URLError
 from part1 import SearchEngine, Configuration
-
-#The following class reads the configuration file, 
+from datetime import datetime
+ 
 class ScraperManager():
-    def __init__(self, config):
-        self.semaphore = threading.BoundedSemaphore(value=config['requests per second'])
+    ''' 
+    This class creates and manages Workers to scrape webpage at a limited rate.
+    
+    After initializing A ScraperManager, use scrape method.
+    '''
+
+    def __init__(self, config: Configuration):
+        ''' 
+        Initializing requires a Configuration instance with keys: 
+        'number of workers', 'requests per second', 'url generator' and 'keywords file'. 
+        '''
+
         self._workers = []
         self._init_workers()
         self.websearchengine = WebSearchEngine(config)
+        self.ratelimiter = RateLimiter(value=config['requests per second'])
 
     def scrape(self):
+        ''' Initiate scarping and print search results. Needs to be stopped manually '''
         for worker in self._workers:
             worker.start()
-        time.sleep(1)
-        while True:
-            for _ in range(config['requests per second']):
-                try:
-                    self.semaphore.release()
-                except ValueError as v:
-                    pass
-            time.sleep(1)
+        self.ratelimiter.limit_rate()
 
     def _init_workers(self):
         for i in range(config['number of workers']):
-            self.workers.append(MyWorker(target=ScraperManager.work, args=(self,), name='{}'.format(i+1)))
+            self._workers.append(Worker(target=ScraperManager.work, args=(self,), name='{}'.format(i+1)))
 
     @staticmethod
     def work(self, manager):
@@ -38,11 +43,11 @@ class ScraperManager():
             print(message)
 
     def _request_permission_to_work(self):
-        self.semaphore.acquire()
+        self.ratelimiter.acquire()
 
-class MyWorker(threading.Thread):
+class Worker(threading.Thread):
     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None):
-        super().__init__(group=group, target=target, name=name, daemon=True)
+        super().__init__(target=target, name=name, daemon=True)
         self.target = target
         self.args = args
         return
@@ -68,6 +73,22 @@ class WebSearchEngine(SearchEngine):
         except (URLError, HTTPError):
             print('Cannot open url: {}. Aborting'.format(url))
             exit()
+
+class RateLimiter(threading.BoundedSemaphore):
+    def __init__(self, value):
+        super().__init__(value)
+        self.value = value
+
+    def limit_rate(self):
+        time.sleep(1)
+        while True:
+            for _ in range(self.value):
+                try:
+                    self.release()
+                except ValueError as v:
+                    pass
+            time.sleep(1)
+
 
 if __name__ == '__main__':
     config = Configuration('config_file.json')
