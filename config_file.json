@@ -1,1 +1,1 @@
-{"num_of_workers": 10, "rps": 4, "url_gen": "https://en.wikipedia.org/wiki/Special:Random", "keywords_file": "keywords.txt"}
+{"number of workers": 10, "requests per second": 4, "url generator": "https://en.wikipedia.org/wiki/Special:Random", "keywords file": "keywords.txt"}
