@@ -4,8 +4,8 @@ import json
 
 class SearchEngine():
     def __init__(self, config):
-        self.keywords = self.config_keywords(config.data['keywords_file'])
-        self.patterns = self.config_patterns(self.keywords)
+        self.keywords = self._config_keywords(config['keywords_file'])
+        self.patterns = self._config_patterns(self.keywords)
 
     def search(self, text):
         keyword_set = set()
@@ -16,24 +16,19 @@ class SearchEngine():
                 keyword_set.add(str.lower(match.group(0)).replace('-', ' '))
         return list(keyword_set)
 
-    def config_keywords(self, keywords_file):
+    def _config_keywords(self, keywords_file):
         try:
             with open(keywords_file, 'r') as f:
-                return f.read().split('\n')
+                return f.read().replace('(', '\(').replace(')', '\)').split('\n')
         except IOError:
-            print("Invalid filename. aborting.")
+            print('Invalid filename. aborting.')
             exit()
 
-    def config_patterns(self, keywords):
+    def _config_patterns(self, keywords):
         patterns = []
         for keyword in keywords:
-            splitted = re.split(r'[- ]', keyword)
-            pattern = r'\b('
-            for index, word in enumerate(splitted):
-                pattern += word
-                if index != len(splitted) - 1:
-                    pattern += r'[ -]?'
-            pattern += r')\b'
+            splitted_keyword = re.split(r'[- ]', keyword)
+            pattern = r'\b(' + r'[ -]?'.join(splitted_keyword) + r')\b'
             patterns.append(pattern)
         return patterns
 
@@ -46,16 +41,21 @@ class Configuration():
             print('invalid cofiguration file. Aborting')
             exit()
 
+    def __getitem__(self, k):
+        return self.data[k]
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     config = Configuration('config_file.json')
     engine = SearchEngine(config)
-    start = timer()
-    print(engine.search('Welcome to >>GENERAL-motors! We love programming!'))
-    end = timer()
-    print(end - start)
+    print(engine.patterns)
+
+    # start = timer()
+    # print(engine.search('Welcome to >>GENERAL-motors! We love programming! We are also in the Networks Industrial buisness'))
+    # end = timer()
+    # print(end - start)
     
-    start = timer()
-    print(engine.search('Beside being a team focused on cyber-security, cybersecurity and cyber security we also do software engineering. With good communication we might figure out some unsolved problems in computer-science!'))
-    end = timer()
-    print(end - start)
+    # start = timer()
+    # print(engine.search('Welcome to >>GENERAL-motors! We love programming! We are also in the Networks (Industrial) buisness'))
+    # end = timer()
+    # print(end - start)
