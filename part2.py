@@ -22,7 +22,7 @@ class ScraperManager():
         self.ratelimiter = RateLimiter(value=config['requests per second'])
 
     def scrape(self):
-        ''' Initiate scarping and print search results. Needs to be stopped manually '''
+        ''' Initiate scarping and print search results. Needs to be stopped manually. '''
         for worker in self._workers:
             worker.start()
         self.ratelimiter.limit_rate()
@@ -45,6 +45,7 @@ class ScraperManager():
         self.ratelimiter.acquire()
 
 class Worker(threading.Thread):
+    ''' A class used by the ScraperManager to impelemt threads. '''
     def __init__(self, group=None, target=None, name=None, args=(), kwargs=None):
         super().__init__(target=target, name=name, daemon=True)
         self.target = target
@@ -55,6 +56,7 @@ class Worker(threading.Thread):
         self.target(self.args, self.args[0])
 
 class WebSearchEngine(SearchEngine):
+    ''' A class used by ScraperManager to fetch data from the url and search it. '''
     def __init__(self, config):
         SearchEngine.__init__(self, config)
         
@@ -71,9 +73,10 @@ class WebSearchEngine(SearchEngine):
                 return str(html, encoding='utf-8'), actual_url
         except (URLError, HTTPError):
             print('Cannot open url: {}. Aborting'.format(url))
-            exit()
+            exit(-1)
 
 class RateLimiter(threading.BoundedSemaphore):
+    ''' A class used by ScraperManager to limit the RPS across all workers. '''
     def __init__(self, value):
         super().__init__(value)
         self.value = value

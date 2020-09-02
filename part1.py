@@ -10,7 +10,7 @@ class Configuration():
                 self.data = json.load(json_file)
         except IOError:
             print('invalid configuration file. Aborting')
-            exit()
+            exit(-1)
 
     def __getitem__(self, k):
         return self.data[k]
@@ -41,7 +41,7 @@ class SearchEngine():
                 return f.read().split('\n')
         except IOError:
             print('Invalid filename. Aborting.')
-            exit()
+            exit(-1)
 
     def _config_patterns(self, keywords):
         patterns = []
@@ -49,8 +49,7 @@ class SearchEngine():
         for keyword in keywords:
             splitted_keyword = re.split(r'[- ]', keyword)
             pattern = r'\b(' + r'[ -]?'.join(splitted_keyword).translate(translate_table) + r')(?!\w)'
-            pattern = re.compile(pattern, re.I)
-            patterns.append(pattern)
+            patterns.append(re.compile(pattern, re.I))
         return patterns
 
 if __name__ == '__main__':
