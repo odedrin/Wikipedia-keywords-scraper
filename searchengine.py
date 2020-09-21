@@ -23,7 +23,8 @@ class SearchEngine():
     '''
     def __init__(self, config: Configuration):
         ''' Requires Configuration instance with a valid 'keywords file' item. '''
-        keywords = self._config_keywords(config['keywords file'])
+        self.config = config
+        keywords = self._config_keywords(self.config['keywords file'])
         self._patterns = self._config_patterns(keywords)
 
     def search(self, text: str):
@@ -52,10 +53,4 @@ class SearchEngine():
             patterns.append(re.compile(pattern, re.I))
         return patterns
 
-if __name__ == '__main__':
-    config = Configuration('config_file.json')
-    searchengine = SearchEngine(config)
-    text = 'Beside being a team focused on cyber-security. we also do software engineering. With good communication we might figure out some unsolved problems in computer-science!'
-    keywords_found_in_text = searchengine.search(text)
-    print(keywords_found_in_text)
     

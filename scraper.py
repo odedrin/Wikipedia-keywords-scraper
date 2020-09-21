@@ -1,7 +1,7 @@
 import threading
 import time
 from urllib.request import Request, urlopen, HTTPError, URLError
-from searchengine import SearchEngine, Cofiguration
+from searchengine import SearchEngine, Configuration
  
 class ScraperManager():
     ''' 
@@ -15,11 +15,11 @@ class ScraperManager():
         Initializing requires a Configuration instance with keys: 
         'number of workers', 'requests per second', 'url generator' and 'keywords file'. 
         '''
-
+        self.config = config
         self._workers = []
         self._init_workers()
-        self.websearchengine = WebSearchEngine(config)
-        self.ratelimiter = RateLimiter(value=config['requests per second'])
+        self.websearchengine = WebSearchEngine(self.config)
+        self.ratelimiter = RateLimiter(value=self.config['requests per second'])
 
     def scrape(self):
         ''' Initiate scarping and print search results. Needs to be stopped manually. '''
@@ -28,7 +28,7 @@ class ScraperManager():
         self.ratelimiter.limit_rate()
 
     def _init_workers(self):
-        for i in range(config['number of workers']):
+        for i in range(self.config['number of workers']):
             self._workers.append(Worker(target=ScraperManager.work, args=(self,), name='{}'.format(i+1)))
 
     @staticmethod
@@ -61,7 +61,7 @@ class WebSearchEngine(SearchEngine):
         SearchEngine.__init__(self, config)
         
     def fetch_and_search(self):
-        text, actual_url = self._fetch_data(config['url generator'])
+        text, actual_url = self._fetch_data(self.config['url generator'])
         keywords_found = SearchEngine.search(self, text) 
         return keywords_found, actual_url
 
@@ -92,7 +92,3 @@ class RateLimiter(threading.BoundedSemaphore):
             time.sleep(1)
 
 
-if __name__ == '__main__':
-    config = Configuration('config_file.json')
-    manager = ScraperManager(config)
-    manager.scrape()
